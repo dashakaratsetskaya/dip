@@ -477,146 +477,170 @@
     }
 
     // УЛУЧШЕННАЯ ФУНКЦИЯ ОТКРЫТИЯ (ВИДЕО И ФАЙЛЫ)
-function openItem(item) {
-  closeModal();
-  modalContent.classList.remove('video-mode');
+    function openItem(item) {
+      closeModal();
+      modalContent.classList.remove('video-mode');
 
-  if (item.isLink) {
-    const url = item.url;
-    const isVideoFile = /\.(mp4|webm|mov|ogg)$/i.test(url);
-    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/?#]+)/);
-    const isVimeo = url.includes('vimeo.com');
+      if (item.isLink) {
+        const url = item.url;
+        const isVideoFile = /\.(mp4|webm|mov|ogg)$/i.test(url);
+        const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/?#]+)/);
+        const isVimeo = url.includes('vimeo.com');
 
-    if (ytMatch) {
-      const videoId = ytMatch[1];
-      // Пробуем youtube-nocookie (меньше ограничений) + параметры
-      const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1&origin=${encodeURIComponent(window.location.origin)}`;
-      modalContent.classList.add('video-mode');
-      
-      modalBody.innerHTML = `
-        <h3 style="margin-bottom:16px">${escapeHtml(item.title || item.name)}</h3>
-        <div class="video-container" id="yt-container">
-          <iframe 
-            id="yt-iframe"
-            src="${embedUrl}" 
-            frameborder="0" 
-            allowfullscreen 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-          </iframe>
-        </div>
-        <div id="yt-error-message" style="display:none; text-align:center; padding:20px;">
-          <p style="color: #c5221f; margin-bottom:16px;">⚠️ Видео заблокировано для встраивания.</p>
-          <button id="retry-embed" style="background:#1a73e8; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; margin-right:10px;">
-            <i class="fas fa-sync-alt"></i> Попробовать снова
-          </button>
-          <a href="${url}" target="_blank" style="background:#fff; color:#1a73e8; border:1px solid #dadce0; padding:10px 20px; border-radius:20px; text-decoration:none;">
-            <i class="fab fa-youtube"></i> Смотреть на YouTube
-          </a>
-        </div>
-      `;
-      
-      const iframe = modalBody.querySelector('#yt-iframe');
-      const errorDiv = modalBody.querySelector('#yt-error-message');
-      const retryBtn = modalBody.querySelector('#retry-embed');
-      
-      // Обработчик ошибки загрузки iframe
-      iframe.addEventListener('error', () => {
-        iframe.style.display = 'none';
-        errorDiv.style.display = 'block';
-      });
-      
-      retryBtn.addEventListener('click', () => {
-        // Меняем домен на youtube.com — иногда помогает при nocookie блокировках
-        const newUrl = `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&origin=${encodeURIComponent(window.location.origin)}`;
-        iframe.src = newUrl;
-        iframe.style.display = '';
-        errorDiv.style.display = 'none';
-        iframe.addEventListener('error', () => {
-          iframe.style.display = 'none';
-          errorDiv.style.display = 'block';
-        }, { once: true });
-      });
-      
-      modal.classList.add('active');
-      return;
-    } 
-    else if (isVimeo) {
-      const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-      let embedUrl = url;
-      if (vimeoMatch) embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-      modalContent.classList.add('video-mode');
-      modalBody.innerHTML = `
-        <h3 style="margin-bottom:16px">${escapeHtml(item.title || item.name)}</h3>
-        <div class="video-container">
-          <iframe src="${embedUrl}" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
-        </div>
-        <p style="margin-top:16px"><a href="${url}" target="_blank">Открыть оригинал <i class="fas fa-external-link-alt"></i></a></p>
-      `;
-      modal.classList.add('active');
-      return;
+        if (ytMatch) {
+          const videoId = ytMatch[1];
+          const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1&origin=${encodeURIComponent(window.location.origin)}`;
+          modalContent.classList.add('video-mode');
+          
+          modalBody.innerHTML = `
+            <h3 style="margin-bottom:16px">${escapeHtml(item.title || item.name)}</h3>
+            <div class="video-container" id="yt-container">
+              <iframe 
+                id="yt-iframe"
+                src="${embedUrl}" 
+                frameborder="0" 
+                allowfullscreen 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+              </iframe>
+            </div>
+            <div id="yt-error-message" style="display:none; text-align:center; padding:20px;">
+              <p style="color: #c5221f; margin-bottom:16px;">⚠️ Видео заблокировано для встраивания.</p>
+              <button id="retry-embed" style="background:#1a73e8; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; margin-right:10px;">
+                <i class="fas fa-sync-alt"></i> Попробовать снова
+              </button>
+              <a href="${url}" target="_blank" style="background:#fff; color:#1a73e8; border:1px solid #dadce0; padding:10px 20px; border-radius:20px; text-decoration:none;">
+                <i class="fab fa-youtube"></i> Смотреть на YouTube
+              </a>
+            </div>
+          `;
+          
+          const iframe = modalBody.querySelector('#yt-iframe');
+          const errorDiv = modalBody.querySelector('#yt-error-message');
+          const retryBtn = modalBody.querySelector('#retry-embed');
+          
+          iframe.addEventListener('error', () => {
+            iframe.style.display = 'none';
+            errorDiv.style.display = 'block';
+          });
+          
+          retryBtn.addEventListener('click', () => {
+            const newUrl = `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&origin=${encodeURIComponent(window.location.origin)}`;
+            iframe.src = newUrl;
+            iframe.style.display = '';
+            errorDiv.style.display = 'none';
+            iframe.addEventListener('error', () => {
+              iframe.style.display = 'none';
+              errorDiv.style.display = 'block';
+            }, { once: true });
+          });
+          
+          modal.classList.add('active');
+          return;
+        } 
+        else if (isVimeo) {
+          const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+          let embedUrl = url;
+          if (vimeoMatch) embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+          modalContent.classList.add('video-mode');
+          modalBody.innerHTML = `
+            <h3 style="margin-bottom:16px">${escapeHtml(item.title || item.name)}</h3>
+            <div class="video-container">
+              <iframe src="${embedUrl}" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
+            </div>
+            <p style="margin-top:16px"><a href="${url}" target="_blank">Открыть оригинал <i class="fas fa-external-link-alt"></i></a></p>
+          `;
+          modal.classList.add('active');
+          return;
+        }
+        else if (isVideoFile) {
+          modalBody.innerHTML = `
+            <h3 style="margin-bottom:16px">${escapeHtml(item.title || item.name)}</h3>
+            <video controls style="max-width:100%; max-height:70vh; display:block; margin:0 auto;">
+              <source src="${url}" type="video/mp4">
+              Ваш браузер не поддерживает видео.
+            </video>
+            <p style="margin-top:16px"><a href="${url}" target="_blank">Открыть оригинал <i class="fas fa-external-link-alt"></i></a></p>
+          `;
+          modal.classList.add('active');
+          return;
+        }
+        else {
+          modalContent.classList.add('video-mode');
+          modalBody.innerHTML = `
+            <h3 style="margin-bottom:16px">${escapeHtml(item.title || item.name)}</h3>
+            <div class="video-container">
+              <iframe src="${url}" frameborder="0" allowfullscreen></iframe>
+            </div>
+            <p style="margin-top:16px"><a href="${url}" target="_blank">Открыть оригинал <i class="fas fa-external-link-alt"></i></a></p>
+          `;
+          modal.classList.add('active');
+          return;
+        }
+      } else {
+        // ОБЫЧНЫЕ ФАЙЛЫ (загруженные)
+        const blob = item.blob;
+        if (!blob) {
+          modalBody.innerHTML = `<p>Ошибка: файл недоступен для предпросмотра.</p>`;
+          modal.classList.add('active');
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const mime = item.mimeType;
+        
+        if (mime.startsWith('image/')) {
+          modalBody.innerHTML = `<img src="${url}" style="max-width:100%; max-height:80vh; display:block; margin:0 auto;" alt="${item.name}">`;
+        } else if (mime === 'application/pdf') {
+          modalBody.innerHTML = `<iframe src="${url}" width="100%" height="80vh" frameborder="0"></iframe>`;
+        } else if (mime.startsWith('text/')) {
+          fetch(url).then(r => r.text()).then(text => {
+            modalBody.innerHTML = `<pre style="white-space:pre-wrap; max-height:80vh; overflow:auto;">${escapeHtml(text)}</pre>`;
+          }).catch(err => {
+            modalBody.innerHTML = `<p>Не удалось загрузить текст: ${err.message}</p>`;
+          });
+        } else if (mime.startsWith('video/') || mime.startsWith('audio/')) {
+          modalBody.innerHTML = `
+            <video controls style="max-width:100%; max-height:80vh;">
+              <source src="${url}" type="${mime}">
+            </video>
+          `;
+        } else if (
+          // Офисные документы и презентации — открываем в новой вкладке браузера
+          mime === 'application/msword' ||
+          mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+          mime === 'application/vnd.ms-excel' ||
+          mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+          mime === 'application/vnd.ms-powerpoint' ||
+          mime === 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        ) {
+          modalBody.innerHTML = `
+            <h3 style="margin-bottom:16px">${escapeHtml(item.name)}</h3>
+            <p style="margin-bottom:24px; color:#5f6368;">📄 Этот файл будет открыт в новой вкладке средствами вашего браузера.</p>
+            <div style="display:flex; gap:12px; justify-content:center;">
+              <button id="openInNewTabBtn" style="background:#1a73e8; color:white; border:none; border-radius:20px; padding:10px 24px; font-weight:500; cursor:pointer;">
+                <i class="fas fa-external-link-alt"></i> Открыть в новой вкладке
+              </button>
+              <a id="downloadOfficeBtn" href="${url}" download="${item.name}" style="background:#fff; color:#1a73e8; border:1px solid #dadce0; border-radius:20px; padding:10px 24px; font-weight:500; text-decoration:none;">
+                <i class="fas fa-download"></i> Скачать
+              </a>
+            </div>
+          `;
+          
+          const openBtn = modalBody.querySelector('#openInNewTabBtn');
+          openBtn.addEventListener('click', () => {
+            window.open(url, '_blank');
+            closeModal();
+          });
+        } else {
+          modalBody.innerHTML = `<p>Предпросмотр недоступен. <a href="${url}" download="${item.name}">Скачать файл</a></p>`;
+        }
+        modal.classList.add('active');
+        
+        const cleanup = () => URL.revokeObjectURL(url);
+        modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(); }, { once: true });
+        document.getElementById('modalClose').addEventListener('click', cleanup, { once: true });
+      }
     }
-    else if (isVideoFile) {
-      modalBody.innerHTML = `
-        <h3 style="margin-bottom:16px">${escapeHtml(item.title || item.name)}</h3>
-        <video controls style="max-width:100%; max-height:70vh; display:block; margin:0 auto;">
-          <source src="${url}" type="video/mp4">
-          Ваш браузер не поддерживает видео.
-        </video>
-        <p style="margin-top:16px"><a href="${url}" target="_blank">Открыть оригинал <i class="fas fa-external-link-alt"></i></a></p>
-      `;
-      modal.classList.add('active');
-      return;
-    }
-    else {
-      modalContent.classList.add('video-mode');
-      modalBody.innerHTML = `
-        <h3 style="margin-bottom:16px">${escapeHtml(item.title || item.name)}</h3>
-        <div class="video-container">
-          <iframe src="${url}" frameborder="0" allowfullscreen></iframe>
-        </div>
-        <p style="margin-top:16px"><a href="${url}" target="_blank">Открыть оригинал <i class="fas fa-external-link-alt"></i></a></p>
-      `;
-      modal.classList.add('active');
-      return;
-    }
-  } else {
-    // Файлы (без изменений)
-    const blob = item.blob;
-    if (!blob) {
-      modalBody.innerHTML = `<p>Ошибка: файл недоступен для предпросмотра.</p>`;
-      modal.classList.add('active');
-      return;
-    }
-    const url = URL.createObjectURL(blob);
-    const mime = item.mimeType;
-    
-    if (mime.startsWith('image/')) {
-      modalBody.innerHTML = `<img src="${url}" style="max-width:100%; max-height:80vh; display:block; margin:0 auto;" alt="${item.name}">`;
-    } else if (mime === 'application/pdf') {
-      modalBody.innerHTML = `<iframe src="${url}" width="100%" height="80vh" frameborder="0"></iframe>`;
-    } else if (mime.startsWith('text/')) {
-      fetch(url).then(r => r.text()).then(text => {
-        modalBody.innerHTML = `<pre style="white-space:pre-wrap; max-height:80vh; overflow:auto;">${escapeHtml(text)}</pre>`;
-      }).catch(err => {
-        modalBody.innerHTML = `<p>Не удалось загрузить текст: ${err.message}</p>`;
-      });
-    } else if (mime.startsWith('video/') || mime.startsWith('audio/')) {
-      modalBody.innerHTML = `
-        <video controls style="max-width:100%; max-height:80vh;">
-          <source src="${url}" type="${mime}">
-        </video>
-      `;
-    } else {
-      modalBody.innerHTML = `<p>Предпросмотр недоступен. <a href="${url}" download="${item.name}">Скачать файл</a></p>`;
-    }
-    modal.classList.add('active');
-    
-    const cleanup = () => URL.revokeObjectURL(url);
-    modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(); }, { once: true });
-    document.getElementById('modalClose').addEventListener('click', cleanup, { once: true });
-  }
-}
 
     function downloadFile(file) {
       const url = URL.createObjectURL(file.blob);
